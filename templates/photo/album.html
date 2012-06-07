@@ -1,0 +1,88 @@
+{% extends "pbase.html" %}
+
+{% block content %}
+    <div class="main">
+
+        <!-- Images  -->
+        <ul>
+        <div class="title">{{ album.title }}</div>
+            <div class="right">
+                View:
+                <a href="{% url photo.views.album album.pk 'thumbnails' %}">thumbnails</a>
+                <a href="{% url photo.views.album album.pk 'full' %}">full</a>
+                <a href="{% url photo.views.album album.pk 'edit' %}">edit</a>
+            </div>
+
+            {% if view == "edit" %}
+                <form action="{% url photo.views.update %}" method="POST">{% csrf_token %}
+            {% endif %}
+
+            {% for img in images.object_list %}
+
+                <!-- FULL VIEW -->
+                {% if view == "full" %}
+                    <a href="{% url photo.views.image img.pk %}"><img border="0" alt=""
+                        src="{{ media_url }}{{ img.image.name }}"
+                        {% if img.width > 900 %}width="900"{% endif %} /></a>
+                {% endif %}
+
+                <!-- EDIT VIEW -->
+                {% if view == "edit" %}
+
+                <table>
+                <tr><td>
+                <a href="{% url photo.views.image img.pk %}"><img border="0" alt=""
+                    src="{{ media_url }}{{ img.thumbnail2.name }}" /></a>
+                    </td>
+                    <td>
+        Title: <input type="text" name="title-{{ img.pk }}" value="{{ img.title }}" /><br />
+        Tags: <input type="text" name="tags-{{ img.pk }}" value="{{ img.tag_lst }}" /><br />
+        Rating:
+        <input size="3" type="text" name="rating-{{ img.pk }}" value="{{ img.rating }}" /><br />
+
+                {% for album in albums %}
+                    {{ album.title }}:
+                    <input type="checkbox" name="album-{{ img.pk }}" value="{{ album.pk }}"
+                        {% if album.title in img.album_lst %}checked{% endif %} />
+                {% endfor %}
+                </td></tr></table>
+                <br />
+
+                {% endif %} <!-- edit view -->
+
+                <!-- THUMBNAILS VIEW -->
+                {% if view == "thumbnails" %}
+                    <a href="{% url photo.views.image img.pk %}"><img border="0" alt=""
+                        src="{{ media_url }}{{ img.thumbnail2.name }}" /></a>
+                {% endif %}
+
+            {% endfor %}
+
+        {% if view == "edit" %}
+            <div id="update"><input type="submit" value="Update"></form></div>
+        {% endif %}
+
+        </ul>
+
+        <!-- Next/Prev page links  -->
+        {% if albums.object_list and albums.paginator.num_pages > 1 %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if albums.has_previous %}
+                    <a href= "?page={{ albums.previous_page_number }}">previous &lt;&lt; </a>
+                {% endif %}
+
+                <span class="current">
+                    &nbsp;Page {{ albums.number }} of {{ albums.paginator.num_pages }}
+                </span>
+
+                {% if albums.has_next %}
+                    <a href="?page={{ albums.next_page_number }}"> &gt;&gt; next</a>
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+
+    </div>
+
+{% endblock %}
